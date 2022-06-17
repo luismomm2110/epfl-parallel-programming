@@ -38,32 +38,26 @@ class Img(val width: Int, val height: Int, private val data: Array[RGBA]):
 
 /** Computes the blurred RGBA value of a single pixel of the input image. */
 def boxBlurKernel(src: Img, x: Int, y: Int, radius: Int): RGBA =
-  if (radius == 0) then return src(x, y)
+  val pixels = {
+    for (
+      i <- -radius to radius;
+      j <- -radius to radius
+    )
+      yield (
+        scalashop.clamp(x + i, 0, src.width - 1),
+        scalashop.clamp(y + j, 0, src.height - 1)
+      )
+  }.distinct.map({ case (x, y) =>
+    val pixel = src(x, y)
+    (red(pixel), green(pixel), blue(pixel), alpha(pixel))
+  })
 
-  var sum = 0
-  var countPixels = 0
-  val minX = clamp(x - radius, 0, src.width)
-  val maxX = clamp(x + radius, 0, src.width)
-  val minY = clamp(y - radius, 0, src.height)
-  val maxY = clamp(y + radius, 0, src.height)
-
-  for (i <- minX until (maxX + 1)) {
-    for (j <- minY until (maxY + 1)) {
-      if (isInBounds(i, j, src)) {
-        sum += src(i, j)
-        countPixels += 1
-      }
-    }
-  }
-
-  sum -= src(x, y)
-  countPixels -= 1
-
-  sum / countPixels
-
-def isInBounds(i: Int, j: Int, src: Img): Boolean = {
-  i <= (src.width - 1) && j <= (src.height - 1)
-}
+  rgba(
+    pixels.map(_._1).sum / pixels.length,
+    pixels.map(_._2).sum / pixels.length,
+    pixels.map(_._3).sum / pixels.length,
+    pixels.map(_._4).sum / pixels.length
+  )
 
 val forkJoinPool = ForkJoinPool()
 
