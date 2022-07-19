@@ -39,11 +39,11 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
    */
   def balance(chars: Array[Char]): Boolean = 
     def _balance(chars: Array[Char], count: Int) : Int =
-      if (chars.isEmpty()) return 0 
-
+      if (chars.isEmpty || count < 0) return count
+      
       chars.head match
-        case '(' => count++
-        case ')' => count --
+        case '(' => _balance(chars.tail, count+1)
+        case ')' => _balance(chars.tail, count-1)
         case _ => _balance(chars.tail, count)
 
     
