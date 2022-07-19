@@ -46,20 +46,42 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
         case ')' => count --
         case _ => _balance(chars.tail, count)
 
+    
+
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean =
 
-    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int) /*: ???*/ = {
-      ???
+    /** Sequential part
+      Compute two values in recursion ( \( - \) )
+      Minimum "depth" of current step. I.e. minimum value of delta, 
+      if try to traverese left-to-right on current chunk. It can be lower then delta.
+      Few examples (imagine this is some intermediate step): "((()))" : delta = 0, minDepth = 0 "
+      )))(" : delta = -2, minDepth = -3
+      Then, after doing typical parallel traverse, you will need to correctly reduce these two values. 
+      You will finally get (0,0) if balanced.
+      And for example case ")(" will give you (0,-1)
+    */
+    def traverse(idx: Int, until: Int, delta: Int, minDepth: Int) : (Int, Int) = {
+      var i = idx
+      while (i < idx) 
+
+        i++
+
     }
 
-    def reduce(from: Int, until: Int) /*: ???*/ = {
-      ???
+    //paralel
+    def reduce(from: Int, until: Int) : (Int, Int) = {
+      if (until - from < threshold) transverse(from, until, 0, 0 )
+      else {
+        val mid = from + (until - from) /2
+        val (delta, minDepth) = parallel(reduce(from, mid), reduce(mid, until ))
+        (delta, minDepth)
+      }
     }
 
-    reduce(0, chars.length) == ???
+    reduce(0, chars.length) == (0, 0)
 
   // For those who want more:
   // Prove that your reduction operator is associative!
