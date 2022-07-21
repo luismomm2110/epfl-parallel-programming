@@ -17,9 +17,9 @@ object ParallelParenthesesBalancingRunner:
   ) withWarmer(Warmer.Default())
 
   def main(args: Array[String]): Unit =
-    val length = 100000000
+    val length = 80000
     val chars = new Array[Char](length)
-    val threshold = 10000
+    val threshold = 8000
     val seqtime = standardConfig measure {
       seqResult = ParallelParenthesesBalancing.balance(chars)
     }
@@ -67,7 +67,8 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
           case ')' => {
             gain = gain - 1
             depth = depth - 1
-          }
+          } 
+          case _ => 
         i = i + 1
 
       (totalGain + gain, depth+minDepth)
@@ -75,13 +76,21 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
 
     //paralel
     def reduce(from: Int, until: Int) : (Int, Int) = {
-      if (until - from < threshold) traverse(from, until, 0, 0 )
+      if (until - from <= threshold) traverse(from, until, 0, 0 )
       else {
         val mid = from + (until - from) /2
         val (resultL, resultR) = parallel(reduce(from, mid), reduce(mid, until))
-        (resultL._0 + resultR) // ver como desconstruir tupla
+        val soma = (resultL._1 + resultR._1)
+        val nest = (resultL._2.min(resultR._2 + resultL._1)) /// min entre minnest da esquerda e soma tot gain da esq + min nest da direita
+        // 
+        (soma, nest) // ver como desconstruir tupla
       }
     }
+
+    /*
+      ([1, 0] ) [-1, -1]
+
+    */
 
     reduce(0, chars.length) == (0, 0)
 
