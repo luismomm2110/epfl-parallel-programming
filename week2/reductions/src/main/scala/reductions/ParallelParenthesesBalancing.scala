@@ -45,6 +45,8 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
         case '(' => _balance(chars.tail, count+1)
         case ')' => _balance(chars.tail, count-1)
         case _ => _balance(chars.tail, count)
+      
+    _balance(chars, 0) == 0
 
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
@@ -53,29 +55,31 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
 
     /** Sequential part
     */
-    def traverse(idx: Int, until: Int, delta: Int, minDepth: Int) : (Int, Int) = {
+    def traverse(idx: Int, until: Int, totalGain: Int, minDepth: Int) : (Int, Int) = {
       var i = idx
-      while (i < idx) 
-        chars[i] match
+      var gain = 0 
+      var depth = 0
+      while (i < until) 
+        chars(i) match
           case '(' => {
-            delta+=1
+            gain = gain + 1
           } 
           case ')' => {
-            delta-=1
-            minDepth-=1
+            gain = gain - 1
+            depth = depth - 1
           }
-        i+=1
+        i = i + 1
 
-      (delta, minDepth)
+      (totalGain + gain, depth+minDepth)
     }
 
     //paralel
     def reduce(from: Int, until: Int) : (Int, Int) = {
-      if (until - from < threshold) transverse(from, until, 0, 0 )
+      if (until - from < threshold) traverse(from, until, 0, 0 )
       else {
         val mid = from + (until - from) /2
-        val (delta, minDepth) = parallel(reduce(from, mid), reduce(mid, until ))
-        (delta, minDepth)
+        val (resultL, resultR) = parallel(reduce(from, mid), reduce(mid, until))
+        (resultL._0 + resultR) // ver como desconstruir tupla
       }
     }
 

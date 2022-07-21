@@ -116,6 +116,13 @@ class ReductionsSuite extends munit.FunSuite:
     check(").", false)
   }
 
+  test("paralel balance should work for string of length 0") {
+    def check(input: String, expected: Boolean) =
+      assert(parBalance(input.toArray, 1) == expected,
+        s"balance($input) should be $expected")
+
+    check("", true)
+  }
 
   import scala.concurrent.duration.*
   override val munitTimeout = 10.seconds
