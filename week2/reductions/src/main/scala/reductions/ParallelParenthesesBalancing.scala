@@ -14,7 +14,7 @@ object ParallelParenthesesBalancingRunner:
     Key.exec.maxWarmupRuns := 80,
     Key.exec.benchRuns := 120,
     Key.verbose := false
-  ) withWarmer(Warmer.Default())
+  ) withWarmer (Warmer.Default())
 
   def main(args: Array[String]): Unit =
     val length = 80000
@@ -33,64 +33,64 @@ object ParallelParenthesesBalancingRunner:
     println(s"parallel balancing time: $fjtime")
     println(s"speedup: ${seqtime.value / fjtime.value}")
 
-object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterface:
+object ParallelParenthesesBalancing
+    extends ParallelParenthesesBalancingInterface:
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
-   */
-  def balance(chars: Array[Char]): Boolean = 
-    def _balance(chars: Array[Char], count: Int) : Int =
+    */
+  def balance(chars: Array[Char]): Boolean =
+    def _balance(chars: Array[Char], count: Int): Int =
       if (chars.isEmpty || count < 0) return count
-      
+
       chars.head match
-        case '(' => _balance(chars.tail, count+1)
-        case ')' => _balance(chars.tail, count-1)
-        case _ => _balance(chars.tail, count)
-      
+        case '(' => _balance(chars.tail, count + 1)
+        case ')' => _balance(chars.tail, count - 1)
+        case _   => _balance(chars.tail, count)
+
     _balance(chars, 0) == 0
 
-
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
-   */
+    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean =
 
     /** Sequential part
-    */
-    def traverse(idx: Int, until: Int, totalGain: Int, minDepth: Int) : (Int, Int) = {
+      */
+    def traverse(
+        idx: Int,
+        until: Int,
+        totalGain: Int,
+        minDepth: Int
+    ): (Int, Int) = {
       var i = idx
-      var gain = 0 
+      var gain = 0
       var depth = 0
-      while (i < until) 
+      while (i < until)
         chars(i) match
           case '(' => {
             gain = gain + 1
-          } 
+          }
           case ')' => {
             gain = gain - 1
             depth = depth - 1
-          } 
-          case _ => 
+          }
+          case _ =>
         i = i + 1
 
-      (totalGain + gain, depth+minDepth)
+      (totalGain + gain, depth + minDepth)
     }
 
-    //paralel
-    def reduce(from: Int, until: Int) : (Int, Int) = {
-      if (until - from <= threshold) traverse(from, until, 0, 0 )
+    // paralel
+    def reduce(from: Int, until: Int): (Int, Int) = {
+      if (until - from <= threshold) traverse(from, until, 0, 0)
       else {
-        val mid = from + (until - from) /2
+        val mid = from + (until - from) / 2
         val (resultL, resultR) = parallel(reduce(from, mid), reduce(mid, until))
         val soma = (resultL._1 + resultR._1)
-        val nest = (resultL._2.min(resultR._2 + resultL._1)) /// min entre minnest da esquerda e soma tot gain da esq + min nest da direita
-        // 
-        (soma, nest) // ver como desconstruir tupla
+        val nest = (resultL._2.min(resultR._2 + resultL._1))
+        //
+        (soma, nest)
       }
     }
-
-    /*
-      ([1, 0] ) [-1, -1]
-
-    */
 
     reduce(0, chars.length) == (0, 0)
 
