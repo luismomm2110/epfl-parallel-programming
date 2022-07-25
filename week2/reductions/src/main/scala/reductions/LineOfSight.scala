@@ -33,11 +33,10 @@ enum Tree(val maxPrevious: Float):
       extends Tree(maxPrevious)
 
 object LineOfSight extends LineOfSightInterface:
+  def calcMaxAngle(last: Float, current: Float): Float =
+    current.max(last)
 
   def lineOfSight(input: Array[Float], output: Array[Float]): Unit =
-    // tangente é input[i]/i, calcula o maximo até aquele ponto. é monotonico
-    def calcMaxAngle(last: Float, current: Float): Float =
-      current.max(last)
 
     def scanLeft(
         input: Array[Float],
@@ -59,7 +58,7 @@ object LineOfSight extends LineOfSightInterface:
   /** Traverses the specified part of the array and returns the maximum angle.
     */
   def upsweepSequential(input: Array[Float], from: Int, until: Int): Float =
-    ???
+    input.zip(0 until (until + 1)).map(tuple => tuple._1 / (tuple._2 + 1)).max
 
   /** Traverses the part of the array starting at `from` and until `end`, and
     * returns the reduction tree for that part of the array.
@@ -70,7 +69,17 @@ object LineOfSight extends LineOfSightInterface:
     * work is divided and done recursively in parallel.
     */
   def upsweep(input: Array[Float], from: Int, end: Int, threshold: Int): Tree =
-    ???
+    if (from - end < threshold)
+      Tree.Leaf(from, end, upsweepSequential(input, from, end))
+    else {
+      val mid = (from - end) / 2
+      val (tR, tL) = parallel(
+        upsweep(input, from, mid, threshold),
+        upsweep(input, mid + 1, end, threshold)
+        Tree.Node()
+      )
+
+    }
 
   /** Traverses the part of the `input` array starting at `from` and until
     * `until`, and computes the maximum angle for each entry of the output
