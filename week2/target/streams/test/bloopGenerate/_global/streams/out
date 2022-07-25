@@ -1,0 +1,4 @@
+[debug] [week2-test] Classpath dependencies List()
+[debug] [week2-test] Dependencies from configurations List(week2)
+[debug] Bloop wrote the configuration of project 'week2-test' to '/home/lmomm/epfl-parallel-programming/week2/.bloop/week2-test.json'
+[success] Generated .bloop/week2-test.json
